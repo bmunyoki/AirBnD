@@ -111,7 +111,7 @@ class OfficeController extends Controller {
     }
 
     public function update(Office $office): JsonResource {
-        abort_unless(auth()->user()->tokenCan('office.create'),
+        abort_unless(auth()->user()->tokenCan('office.update'),
             Response::HTTP_FORBIDDEN
         );
 

@@ -42,6 +42,27 @@ class OfficeControllerTest extends TestCase
 
     }
 
+    /**
+     * @test
+     */
+    public function test_it_lists_all_offices_including_hidden_for_current_user() {
+        $user = User::factory()->create();
+        Office::factory(3)->for($user)->create();
+
+        Office::factory()->hidden()->for($user)->create();
+        Office::factory()->pending()->for($user)->create();
+
+        $this->actingAs($user);
+
+        $response = $this->get('/api/offices?user_id='.$user->id);
+
+        $response->assertOk();
+
+        // Assert the returned json data has 3 items - the ones we created above
+        $response->assertJsonCount(5, 'data');
+
+    }
+
     public function test_only_returns_approved_and_visible_offices () {
         Office::factory(3)->create();
 
@@ -295,8 +316,33 @@ class OfficeControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * @test
+    * 
+    */
+    public function test_it_updates_featured_image_of_an_office() {
+        $user = User::factory()->create();
+
+        $office = Office::factory()->for($user)->create();
+
+        $image = $office->images()->create([
+            'path' => 'image.jpg'
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->putJson('/api/offices/'.$office->id, [
+            'featured_image_id' => $image->id,
+        ]);
+
+        //$response->dump();
+
+        $response->assertOk()
+            ->assertJsonPath('data.featured_image_id', $image->id);
+    }
+
     
-/**
+    /**
      * @test
     * 
     */
